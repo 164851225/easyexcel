@@ -30,6 +30,7 @@ import org.apache.poi.hssf.record.SSTRecord;
 import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.CellType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -177,10 +178,10 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
 
         switch (record.getSid()) {
             case BoundSheetRecord.sid:
-                boundSheetRecords.add((BoundSheetRecord)record);
+                boundSheetRecords.add((BoundSheetRecord) record);
                 break;
             case BOFRecord.sid:
-                BOFRecord br = (BOFRecord)record;
+                BOFRecord br = (BOFRecord) record;
                 if (br.getType() == BOFRecord.TYPE_WORKSHEET) {
                     // Create sub workbook if required
                     if (workbookBuildingListener != null && stubWorkbook == null) {
@@ -202,18 +203,18 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 break;
 
             case SSTRecord.sid:
-                sstRecord = (SSTRecord)record;
+                sstRecord = (SSTRecord) record;
                 break;
 
             case BlankRecord.sid:
-                BlankRecord brec = (BlankRecord)record;
+                BlankRecord brec = (BlankRecord) record;
 
                 thisRow = brec.getRow();
                 thisColumn = brec.getColumn();
                 thisStr = "";
                 break;
             case BoolErrRecord.sid:
-                BoolErrRecord berec = (BoolErrRecord)record;
+                BoolErrRecord berec = (BoolErrRecord) record;
 
                 thisRow = berec.getRow();
                 thisColumn = berec.getColumn();
@@ -221,13 +222,16 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 break;
 
             case FormulaRecord.sid:
-                FormulaRecord frec = (FormulaRecord)record;
+                FormulaRecord frec = (FormulaRecord) record;
 
                 thisRow = frec.getRow();
                 thisColumn = frec.getColumn();
 
                 if (outputFormulaValues) {
-                    if (Double.isNaN(frec.getValue())) {
+
+//                    if (Double.isNaN(frec.getValue())) {
+                    // fixbug string judgment
+                    if (frec.getCachedResultType() == CellType.STRING.getCode()) {
                         // Formula result is a string
                         // This is stored in the next record
                         outputNextStringRecord = true;
@@ -243,7 +247,7 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
             case StringRecord.sid:
                 if (outputNextStringRecord) {
                     // String for formula
-                    StringRecord srec = (StringRecord)record;
+                    StringRecord srec = (StringRecord) record;
                     thisStr = srec.getString();
                     thisRow = nextRow;
                     thisColumn = nextColumn;
@@ -252,14 +256,14 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 break;
 
             case LabelRecord.sid:
-                LabelRecord lrec = (LabelRecord)record;
+                LabelRecord lrec = (LabelRecord) record;
 
                 thisRow = lrec.getRow();
                 thisColumn = lrec.getColumn();
                 thisStr = lrec.getValue();
                 break;
             case LabelSSTRecord.sid:
-                LabelSSTRecord lsrec = (LabelSSTRecord)record;
+                LabelSSTRecord lsrec = (LabelSSTRecord) record;
 
                 thisRow = lsrec.getRow();
                 thisColumn = lsrec.getColumn();
@@ -270,7 +274,7 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 }
                 break;
             case NoteRecord.sid:
-                NoteRecord nrec = (NoteRecord)record;
+                NoteRecord nrec = (NoteRecord) record;
 
                 thisRow = nrec.getRow();
                 thisColumn = nrec.getColumn();
@@ -278,7 +282,7 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 thisStr = "(TODO)";
                 break;
             case NumberRecord.sid:
-                NumberRecord numrec = (NumberRecord)record;
+                NumberRecord numrec = (NumberRecord) record;
 
                 thisRow = numrec.getRow();
                 thisColumn = numrec.getColumn();
@@ -287,7 +291,7 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 thisStr = formatListener.formatNumberDateCell(numrec);
                 break;
             case RKRecord.sid:
-                RKRecord rkrec = (RKRecord)record;
+                RKRecord rkrec = (RKRecord) record;
 
                 thisRow = rkrec.getRow();
                 thisColumn = rkrec.getColumn();
@@ -304,7 +308,7 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
 
         // Handle missing column
         if (record instanceof MissingCellDummyRecord) {
-            MissingCellDummyRecord mc = (MissingCellDummyRecord)record;
+            MissingCellDummyRecord mc = (MissingCellDummyRecord) record;
             thisRow = mc.getRow();
             thisColumn = mc.getColumn();
             thisStr = "";
@@ -333,7 +337,7 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
 
         // Handle end of row
         if (record instanceof LastCellOfRowDummyRecord) {
-            thisRow = ((LastCellOfRowDummyRecord)record).getRow();
+            thisRow = ((LastCellOfRowDummyRecord) record).getRow();
 
             if (lastColumnNumber == -1) {
                 lastColumnNumber = 0;
