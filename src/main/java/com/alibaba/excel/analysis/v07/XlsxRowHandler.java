@@ -50,6 +50,12 @@ public class XlsxRowHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
+        // TODO: 1/25/19 zhengjianhui 获取单元格坐标方法 
+//        if("mergeCell".equalsIgnoreCase(name)) {
+//            // 合并单元格
+//            System.out.println(attributes.getValue("ref"));
+//            System.out.println(analysisContext.getCurrentSheet().getSheetNo());
+//        }
 
         setTotalRowCount(name, attributes);
 

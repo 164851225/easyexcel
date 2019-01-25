@@ -5,11 +5,29 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.OneRowAnalysisFinishEvent;
 import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.alibaba.excel.metadata.Sheet;
-import org.apache.poi.hssf.eventusermodel.*;
+
+import org.apache.poi.hssf.eventusermodel.EventWorkbookBuilder;
+import org.apache.poi.hssf.eventusermodel.FormatTrackingHSSFListener;
+import org.apache.poi.hssf.eventusermodel.HSSFEventFactory;
+import org.apache.poi.hssf.eventusermodel.HSSFListener;
+import org.apache.poi.hssf.eventusermodel.HSSFRequest;
+import org.apache.poi.hssf.eventusermodel.MissingRecordAwareHSSFListener;
 import org.apache.poi.hssf.eventusermodel.dummyrecord.LastCellOfRowDummyRecord;
 import org.apache.poi.hssf.eventusermodel.dummyrecord.MissingCellDummyRecord;
 import org.apache.poi.hssf.model.HSSFFormulaParser;
-import org.apache.poi.hssf.record.*;
+import org.apache.poi.hssf.record.BOFRecord;
+import org.apache.poi.hssf.record.BlankRecord;
+import org.apache.poi.hssf.record.BoolErrRecord;
+import org.apache.poi.hssf.record.BoundSheetRecord;
+import org.apache.poi.hssf.record.FormulaRecord;
+import org.apache.poi.hssf.record.LabelRecord;
+import org.apache.poi.hssf.record.LabelSSTRecord;
+import org.apache.poi.hssf.record.NoteRecord;
+import org.apache.poi.hssf.record.NumberRecord;
+import org.apache.poi.hssf.record.RKRecord;
+import org.apache.poi.hssf.record.Record;
+import org.apache.poi.hssf.record.SSTRecord;
+import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
@@ -136,10 +154,26 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
 
     private List<Sheet> sheets = new ArrayList<Sheet>();
 
+    List<Record> mergeCellsRecord = new ArrayList<Record>();
+
     public void processRecord(Record record) {
         int thisRow = -1;
         int thisColumn = -1;
         String thisStr = null;
+
+        // TODO: 1/25/19 zhengjianhui 获取单元格坐标方法
+//        // 获取合并单元格的坐标
+//        if(record instanceof MergeCellsRecord) {
+//            MergeCellsRecord merge = (MergeCellsRecord) record;
+//
+//            for (int i = 0; i < merge.getNumAreas(); i++) {
+//                CellRangeAddress rangeAddress = merge.getAreaAt(i);
+//                System.out.println(rangeAddress);
+//            }
+//
+//
+//            mergeCellsRecord.add(record);
+//        }
 
         switch (record.getSid()) {
             case BoundSheetRecord.sid:
