@@ -41,4 +41,9 @@ public class ModelBuildEventListener extends AnalysisEventListener {
     public void doAfterAllAnalysed(AnalysisContext context) {
 
     }
+
+    @Override
+    public void mergeAnalysed(Object object, AnalysisContext context) {
+
+    }
 }

@@ -3,9 +3,13 @@ package com.alibaba.excel.analysis.v07;
 import com.alibaba.excel.annotation.FieldType;
 import com.alibaba.excel.constant.ExcelXmlConstants;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEvent;
 import com.alibaba.excel.event.AnalysisEventRegisterCenter;
+import com.alibaba.excel.event.MergeAddressEvent;
 import com.alibaba.excel.event.OneRowAnalysisFinishEvent;
 import com.alibaba.excel.util.PositionUtils;
+
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.xml.sax.Attributes;
@@ -14,7 +18,11 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Arrays;
 
-import static com.alibaba.excel.constant.ExcelXmlConstants.*;
+import static com.alibaba.excel.constant.ExcelXmlConstants.CELL_VALUE_TAG;
+import static com.alibaba.excel.constant.ExcelXmlConstants.CELL_VALUE_TAG_1;
+import static com.alibaba.excel.constant.ExcelXmlConstants.DIMENSION;
+import static com.alibaba.excel.constant.ExcelXmlConstants.DIMENSION_REF;
+import static com.alibaba.excel.constant.ExcelXmlConstants.ROW_TAG;
 
 /**
  *
@@ -50,12 +58,7 @@ public class XlsxRowHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
-        // TODO: 1/25/19 zhengjianhui 获取单元格坐标方法 
-//        if("mergeCell".equalsIgnoreCase(name)) {
-//            // 合并单元格
-//            System.out.println(attributes.getValue("ref"));
-//            System.out.println(analysisContext.getCurrentSheet().getSheetNo());
-//        }
+        executeMerge(name, attributes);
 
         setTotalRowCount(name, attributes);
 
@@ -137,6 +140,15 @@ public class XlsxRowHandler extends DefaultHandler {
         if (name.equals(ROW_TAG)) {
             registerCenter.notifyListeners(new OneRowAnalysisFinishEvent(curRowContent,curCol));
             curRowContent = new String[20];
+        }
+    }
+
+    private void executeMerge(String name, Attributes attributes) {
+        if("mergeCell".equalsIgnoreCase(name)) {
+            // 合并单元格
+            CellRangeAddress rangeAddress = CellRangeAddress.valueOf(attributes.getValue("ref"));
+            AnalysisEvent analysisEvent = new MergeAddressEvent(rangeAddress);
+            registerCenter.notifyListeners(analysisEvent);
         }
     }
 

@@ -20,7 +20,7 @@ public interface AnalysisEventRegisterCenter {
      *
      * @param event parse event
      */
-    void notifyListeners(OneRowAnalysisFinishEvent event);
+    void notifyListeners(AnalysisEvent event);
 
     /**
      * Clean all listeners.

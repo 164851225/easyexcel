@@ -1,8 +1,10 @@
 package com.alibaba.excel.analysis;
 
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEvent;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.event.AnalysisEventRegisterCenter;
+import com.alibaba.excel.event.MergeAddressEvent;
 import com.alibaba.excel.event.OneRowAnalysisFinishEvent;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.util.TypeUtil;
@@ -52,16 +54,43 @@ public abstract class BaseSaxAnalyser implements AnalysisEventRegisterCenter, Ex
     }
 
     @Override
-    public void notifyListeners(OneRowAnalysisFinishEvent event) {
+    public void notifyListeners(AnalysisEvent event) {
+        short type = event.getType();
+        switch (type) {
+            case OneRowAnalysisFinishEvent.TYPE:
+                executeOneRow(event);
+                break;
+
+            case MergeAddressEvent.TYPE:
+                executeMerge(event);
+                break;
+
+            default:
+                break;
+        }
+
+
+
+    }
+
+    private void executeMerge(AnalysisEvent event) {
+        /**  notify all event listeners **/
+        for (Map.Entry<String, AnalysisEventListener> entry : listeners.entrySet()) {
+            entry.getValue().mergeAnalysed(event.getData(), analysisContext);
+        }
+
+    }
+
+    private void executeOneRow(AnalysisEvent event) {
         analysisContext.setCurrentRowAnalysisResult(event.getData());
         /** Parsing header content **/
         if (analysisContext.getCurrentRowNum() < analysisContext.getCurrentSheet().getHeadLineMun()) {
             if (analysisContext.getCurrentRowNum() <= analysisContext.getCurrentSheet().getHeadLineMun() - 1) {
                 analysisContext.buildExcelHeadProperty(null,
-                    (List<String>)analysisContext.getCurrentRowAnalysisResult());
+                        (List<String>) analysisContext.getCurrentRowAnalysisResult());
             }
         } else {
-            List<String> content = converter((List<String>)event.getData());
+            List<String> content = converter((List<String>) event.getData());
             /** Parsing Analyze the body content **/
             analysisContext.setCurrentRowAnalysisResult(content);
             if (listeners.size() == 1) {

@@ -23,4 +23,12 @@ public abstract class AnalysisEventListener<T> {
      * @param context
      */
     public abstract void doAfterAllAnalysed(AnalysisContext context);
+
+
+    /**
+     * 合并单元格相关事件处理
+     * @param object  one merge data
+     * @param context analysis context
+     */
+    public abstract void mergeAnalysed(T object, AnalysisContext context);
 }

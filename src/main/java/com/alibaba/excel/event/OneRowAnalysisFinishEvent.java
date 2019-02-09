@@ -6,7 +6,9 @@ import java.util.List;
 /**
  * @author jipengfei
  */
-public class OneRowAnalysisFinishEvent {
+public class OneRowAnalysisFinishEvent implements AnalysisEvent {
+
+    public static final short TYPE = 1;
 
     public OneRowAnalysisFinishEvent(Object content) {
         this.data = content;
@@ -24,8 +26,14 @@ public class OneRowAnalysisFinishEvent {
 
     private Object data;
 
+    @Override
     public Object getData() {
         return data;
+    }
+
+    @Override
+    public short getType() {
+        return TYPE;
     }
 
     public void setData(Object data) {

@@ -2,6 +2,8 @@ package com.alibaba.excel.analysis.v03;
 
 import com.alibaba.excel.analysis.BaseSaxAnalyser;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEvent;
+import com.alibaba.excel.event.MergeAddressEvent;
 import com.alibaba.excel.event.OneRowAnalysisFinishEvent;
 import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.alibaba.excel.metadata.Sheet;
@@ -22,6 +24,7 @@ import org.apache.poi.hssf.record.BoundSheetRecord;
 import org.apache.poi.hssf.record.FormulaRecord;
 import org.apache.poi.hssf.record.LabelRecord;
 import org.apache.poi.hssf.record.LabelSSTRecord;
+import org.apache.poi.hssf.record.MergeCellsRecord;
 import org.apache.poi.hssf.record.NoteRecord;
 import org.apache.poi.hssf.record.NumberRecord;
 import org.apache.poi.hssf.record.RKRecord;
@@ -31,6 +34,7 @@ import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -155,26 +159,11 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
 
     private List<Sheet> sheets = new ArrayList<Sheet>();
 
-    List<Record> mergeCellsRecord = new ArrayList<Record>();
-
+    @Override
     public void processRecord(Record record) {
         int thisRow = -1;
         int thisColumn = -1;
         String thisStr = null;
-
-        // TODO: 1/25/19 zhengjianhui 获取单元格坐标方法
-//        // 获取合并单元格的坐标
-//        if(record instanceof MergeCellsRecord) {
-//            MergeCellsRecord merge = (MergeCellsRecord) record;
-//
-//            for (int i = 0; i < merge.getNumAreas(); i++) {
-//                CellRangeAddress rangeAddress = merge.getAreaAt(i);
-//                System.out.println(rangeAddress);
-//            }
-//
-//
-//            mergeCellsRecord.add(record);
-//        }
 
         switch (record.getSid()) {
             case BoundSheetRecord.sid:
@@ -297,6 +286,14 @@ public class XlsSaxAnalyser extends BaseSaxAnalyser implements HSSFListener {
                 thisColumn = rkrec.getColumn();
                 thisStr = "";
                 break;
+
+            case MergeCellsRecord.sid:
+                MergeCellsRecord merge = (MergeCellsRecord) record;
+                for (int i = 0; i < merge.getNumAreas(); i++) {
+                    CellRangeAddress rangeAddress = merge.getAreaAt(i);
+                    AnalysisEvent analysisEvent = new MergeAddressEvent(rangeAddress);
+                    notifyListeners(analysisEvent);
+                }
             default:
                 break;
         }

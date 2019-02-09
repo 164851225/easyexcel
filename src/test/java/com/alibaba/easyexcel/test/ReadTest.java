@@ -6,7 +6,10 @@ import com.alibaba.easyexcel.test.model.ReadModel2;
 import com.alibaba.easyexcel.test.util.FileUtil;
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.metadata.Sheet;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,6 +17,30 @@ import java.io.InputStream;
 import java.util.List;
 
 public class ReadTest {
+
+    @Test
+    public void test() {
+        InputStream inputStream = FileUtil.getResourcesFileInputStream("2003merge.xls");
+        ExcelReader excelReader = EasyExcelFactory.getReader(inputStream, new AnalysisEventListener() {
+            @Override
+            public void invoke(Object object, AnalysisContext context) {
+                System.out.println(object);
+            }
+
+            @Override
+            public void doAfterAllAnalysed(AnalysisContext context) {
+
+            }
+
+            @Override
+            public void mergeAnalysed(Object object, AnalysisContext context) {
+                System.out.println(context.getCurrentSheet().getSheetNo());
+                System.out.println(object);
+            }
+        });
+        excelReader.read();
+
+    }
 
 
     /**

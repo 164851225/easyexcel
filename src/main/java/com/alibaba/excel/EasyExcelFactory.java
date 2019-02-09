@@ -36,6 +36,11 @@ public class EasyExcelFactory {
             @Override
             public void doAfterAllAnalysed(AnalysisContext context) {
             }
+
+            @Override
+            public void mergeAnalysed(Object object, AnalysisContext context) {
+                
+            }
         }, false).read(sheet);
         return rows;
     }

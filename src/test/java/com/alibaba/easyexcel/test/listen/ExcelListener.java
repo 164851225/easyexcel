@@ -25,6 +25,12 @@ public class ExcelListener extends AnalysisEventListener {
     public void doAfterAllAnalysed(AnalysisContext context) {
         doSomething();
     }
+
+    @Override
+    public void mergeAnalysed(Object object, AnalysisContext context) {
+
+    }
+
     public void doSomething(){
         for (Object o:data) {
             System.out.println(o);
